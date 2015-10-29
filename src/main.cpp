@@ -74,6 +74,7 @@ void parsing(string& cmd)
     cout << "parsed commands: " << parsed <<endl;
     //display(parsed);
     cmd = parsed;
+    free(parsed);
     //cout << "new cmd: " << cmd << endl;
     //const char *c = cmd.c_str();
     //strcpy(, parsed);
@@ -121,16 +122,20 @@ void nullconnectors(string& cm)
 }
 void commandsort(char* cmd, char* b[] )
 {
+    int j = 0;
+    int k = 0;
     for(unsigned i = 0; cmd[i] != '\0'; i++ )
     {
-        if(cmd[i] == ' ')
+        if (cmd[i] == ' ')
         {
-            b[0] = cmd;
+            b[j] = cmd + k;
             cmd[i] = '\0';
-            
+            j++;
+            k = i + 1;
         }
         
     }
+    b[j + 1] = '\0';
 }
 int main (int argc, char **argv)
 {
@@ -152,15 +157,12 @@ int main (int argc, char **argv)
     //nullconnectors(cmd);
     //cout << *argv <<endl;
     cout <<"After nullconnectors: " <<  cmd << endl;
-    char command[66666];
-    unsigned i = 0;
-    for(i = 0; i < cmd.size(); i++)
-    {
-        command[i] = cmd[i];
-    }
-    command[i + 1] = '\0';
     char* b[66666];
-    b[0] = command;
+    vector<char> v(cmd.begin(), cmd.end());
+    char* command = &v[0]; // pointer to start of vector
+    commandsort(command, b);
+    //b[0] = command;
+                
     execvp(b[0], b );
     //character pointer array
     //char *b[66666];
