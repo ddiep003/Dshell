@@ -28,21 +28,21 @@ void parsing(string& cmd)
     {
         if(cmd[i] == '#')
         {
-            cout << "made it#" << endl;
+            //cout << "made it#" << endl;
             cmd[i] = '\0';
             parsed[j] = '\0';
         }
         else if (cmd[i] == ';')
         {
-            cout << "made it;" << endl;
+            //cout << "made it;" << endl;
             parsed[j] = ' ';
             parsed[++j] = ';';
             parsed[++j] = ' ';
-            display(parsed);
+            //display(parsed);
         }
         else if (cmd[i] == '|' && cmd[i + 1] == '|')
         {
-            cout << "made it||" << endl;
+            //cout << "made it||" << endl;
             parsed[j] = ' ';
             parsed[++j] = '|';
             parsed[++j] = '|';
@@ -51,55 +51,11 @@ void parsing(string& cmd)
         }
         else if (cmd[i] == '&' && cmd[i + 1] == '&')//&& connector
         {
-            cout << "made it&&" << endl;
+            //cout << "made it&&" << endl;
             parsed[j] = ' ';
             parsed[++j] = '&';
             parsed[++j] = '&';
             parsed[++j] = ' ';
-            ++i;
-        }
-        else if (cmd[i] == '>' && cmd[i + 1] == '>')//stdout redirection append
-        {
-            parsed[j] = ' ';
-            parsed[++j] = '>';
-            parsed[++j] = '>';
-            parsed[++j] = ' ';
-            ++i;
-        }
-        else if (cmd[i] == '>')//stdout redirection
-        {
-			parsed[j] = ' ';
-			parsed[++j] = '>';
-			parsed[++j] = ' ';
-
-        }
-        else if (cmd[i] == '<')//stdin redirection
-        {
-			parsed[j] = ' ';
-			parsed[++j] = '<';
-			parsed[++j] = ' ';
-        }
-        else if ((cmd[i] == '0' || cmd[i] == '1' || cmd[i] == '2') &&
-				cmd[i + 1] == '>')
-        {
-            if (cmd[i] == '0')
-            {
-                parsed[j] = '0';
-            }
-            else if (cmd[i] == '1') 
-            {
-                parsed[j] = '1';
-            }
-            else if (cmd[i] == '2') 
-            {
-                parsed[j] = '2';
-                parsed[++j] = '>';
-            }
-            if (cmd[i + 2] == '>')
-            {
-				++i;
-				parsed[++j] = '>';
-            }
             ++i;
         }
         else
@@ -112,13 +68,13 @@ void parsing(string& cmd)
             parsed[j + 1] = '\0';
             //cout << "Index of j: " << j << end
         }
-        display(parsed);
+        //display(parsed);
     }
-    cout << "Original " << cmd << endl;
-    cout << parsed <<endl;
-    display(parsed);
+    cout << "Original: " << cmd << endl;
+    cout << "parsed commands: " << parsed <<endl;
+    //display(parsed);
     cmd = parsed;
-    cout << "new cmd " << cmd << endl;
+    //cout << "new cmd: " << cmd << endl;
     //const char *c = cmd.c_str();
     //strcpy(, parsed);
     //free(parsed)
@@ -141,6 +97,41 @@ void myFork()
 		cout << "Parent: I'm the parent: " << pid << endl;
 	}
 }
+void nullconnectors(string& cm)
+{
+    for(unsigned i = 0; i < cm.size(); ++i)
+    {
+        if (cm[i] == ';')
+        {
+            if(cm[i + 1] != '\0')
+            {
+                cm[i + 1] = '\0';
+            }
+        }
+        if((cm[i] == '&') && (cm[i + 1] == '&'))
+        {
+            if(cm[i + 2] != '\0')
+            {
+                cm[i + 2] = '\0';
+                //cout << cm[i] << cm[i+1];
+            }
+        }
+        
+    } 
+}
+void commandsort(char* cmd, char* b[] )
+{
+    for(unsigned i = 0; cmd[i] != '\0'; i++ )
+    {
+        if(cmd[i] == ' ')
+        {
+            b[0] = cmd;
+            cmd[i] = '\0';
+            
+        }
+        
+    }
+}
 int main (int argc, char **argv)
 {
     string cmd;
@@ -153,9 +144,28 @@ int main (int argc, char **argv)
     //}
 
     parsing(cmd);
-    cout << cmd << endl;;
+    //put null after every connector
+    //tokenize strtok with \0 as a delimiter.
+    //vector<string> commands;
     
-
+    cout <<"Before nullconnectors: " << cmd << endl;
+    //nullconnectors(cmd);
+    //cout << *argv <<endl;
+    cout <<"After nullconnectors: " <<  cmd << endl;
+    char command[66666];
+    unsigned i = 0;
+    for(i = 0; i < cmd.size(); i++)
+    {
+        command[i] = cmd[i];
+    }
+    command[i + 1] = '\0';
+    char* b[66666];
+    b[0] = command;
+    execvp(b[0], b );
+    //character pointer array
+    //char *b[66666];
+    //if i find a space ' ' then everything before that space goes into the first pointer
+    //of the character array get the address of everything before the space into the chararray
     
     
 }
