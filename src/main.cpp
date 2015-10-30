@@ -98,71 +98,64 @@ void myFork()
 		cout << "Parent: I'm the parent: " << pid << endl;
 	}
 }
-void nullconnectors(string& cm)
+void nullconnectors(string& cm) //finds space ' ' and set it to NULL
 {
     for(unsigned i = 0; i < cm.size(); ++i)
     {
-        if (cm[i] == ';')
+        if (cm[i] == ' ')
         {
-            if(cm[i + 1] != '\0')
-            {
-                cm[i + 1] = '\0';
-            }
+            cm[i] = '\0';
         }
-        if((cm[i] == '&') && (cm[i + 1] == '&'))
-        {
-            if(cm[i + 2] != '\0')
-            {
-                cm[i + 2] = '\0';
-                //cout << cm[i] << cm[i+1];
-            }
-        }
-        
     } 
 }
 void commandsort(char* cmd, char* b[] )
 {
-    int j = 0;
-    int k = 0;
-    for(unsigned i = 0; cmd[i] != '\0'; i++ )
+    int i = 0;
+    //cout << "Before the parse\n";
+    char* token = strtok(cmd, " ");
+    while (token != NULL)
     {
-        if (cmd[i] == ' ')
-        {
-            b[j] = cmd + k;
-            cmd[i] = '\0';
-            j++;
-            k = i + 1;
-        }
-        
+        b[i] = token;
+        token = strtok(NULL , " " );
+        i++;
     }
-    b[j + 1] = '\0';
+    b[i + 1] = '\0';
 }
 int main (int argc, char **argv)
 {
     string cmd;
-    //while (cmd != "exit")
-    //{
-        cout << "$ ";
-        
-        getline(cin, cmd);
-        //cout << cmd << endl;
-    //}
-
+    cout << "$ ";
+    getline(cin, cmd);
     parsing(cmd);
+    
     //put null after every connector
     //tokenize strtok with \0 as a delimiter.
     //vector<string> commands;
-    
-    cout <<"Before nullconnectors: " << cmd << endl;
-    //nullconnectors(cmd);
-    //cout << *argv <<endl;
-    cout <<"After nullconnectors: " <<  cmd << endl;
     char* b[66666];
-    vector<char> v(cmd.begin(), cmd.end());
-    char* command = &v[0]; // pointer to start of vector
+    char command[66666];
+    cout << "Copying \n";
+    for(unsigned i =0; cmd[i] != '\0'; i++)
+    {
+        command[i] = cmd[i];
+    }
+    command[cmd.length()] = '\0';
+    
+    for (unsigned i = 0; command[i] != '\0'; i++)
+    {
+        cout << command[i];
+    }
+    cout << endl;
     commandsort(command, b);
-    //b[0] = command;
-                
+    for(unsigned i =0; b[i] != '\0'; i++)
+    {
+        for(unsigned j =0; b[j] != '\0'; j++)
+        {
+            cout << b[i][j];
+        }
+        cout << endl;
+    }
+    
+    cout << "Execvp\n";
     execvp(b[0], b );
     //character pointer array
     //char *b[66666];
@@ -171,3 +164,10 @@ int main (int argc, char **argv)
     
     
 }
+// if it fails then child returns -1 //
+//perror outputs failure when fork fails
+//waitpid(current_pid, &status, 0)
+
+
+//strtok(string, " ");
+//while (string != NULL)
