@@ -12,18 +12,11 @@
 #include <csignal>
 #include <queue>
 
+#define MEMORY 66666
 using namespace std;
-void display(string x)
-{
-    for (int i = 0; x[i] != '\0'; ++i)
-    {
-        cout << x[i];
-    }
-    cout << endl;
-}
 void parsing(string& cmd)
 {
-    char* parsed = (char*) malloc (50000);
+    char* parsed = (char*) malloc (MEMORY);
     for (int i = 0, j = 0; cmd[i] != '\0'; ++i, ++j)
     {
         if(cmd[i] == '#')
@@ -80,38 +73,12 @@ void parsing(string& cmd)
     //strcpy(, parsed);
     //free(parsed)
 }
-
-void myFork()
-{
-	pid_t pid = fork();
-	if(pid < 0)
-	{
-		cout << "Fork Failed" << endl;
-		exit(1);
-	}
-	else if (pid == 0)
-	{
-		cout << "Child: I'm the child: " << pid << endl;
-	}
-	else if (pid > 0)
-	{
-		cout << "Parent: I'm the parent: " << pid << endl;
-	}
-}
-void nullconnectors(string& cm) //finds space ' ' and set it to NULL
-{
-    for(unsigned i = 0; i < cm.size(); ++i)
-    {
-        if (cm[i] == ' ')
-        {
-            cm[i] = '\0';
-        }
-    } 
-}
+// queue of strings
+//pop strings to an array of char
+//point array to c
 void commandsort(char* cmd, char* b[] )
 {
     int i = 0;
-    //cout << "Before the parse\n";
     char* token = strtok(cmd, " ");
     while (token != NULL)
     {
@@ -119,7 +86,112 @@ void commandsort(char* cmd, char* b[] )
         token = strtok(NULL , " " );
         i++;
     }
-    b[i + 1] = '\0';
+
+    b[i] = '\0';
+    //cout << "Work\n";
+    // queue<string> test;
+    // for(unsigned k = 0; b[k] != '\0'; k++)
+    // {
+    //     cout << "Pointer " << k << ": "; 
+    //     for(unsigned l = 0; b[k][l] != '\0'; l++)
+    //     {
+    //         cout << b[k][l];
+    //     }
+    //     test.push(b[k]);
+    //     cout << endl;
+    // }
+}
+
+
+//when i hit a connector in char array set it to null and keep track of array
+void executecmd(char* array[])
+{
+    pid_t processID, pid; //processID = commands
+	int status;
+    int i = 0;
+    queue<string> connectors;
+    queue<string> comms;
+    
+	while(array[i] != '\0')
+	{
+	    comms.push(array[i]); //pushes commands into queue
+	    i++;
+	}
+	i = 0;
+
+	//char* temp = new char [100];    //mem = 66666
+    while (true)
+    {
+	    //char* temp[100];
+        if(comms.empty())
+        {
+            break;
+        }
+        if ((comms.front() != ";") || (comms.front() != "&&")|| //populate array
+    	    (comms.front() != "||"))
+        {
+            char* temp = new char [100];
+            strcpy(temp, comms.front().c_str());
+            array[i] = temp;
+            comms.pop();
+            i++;
+        }
+        else //comms.front == connector //stop parsing and execvp
+        {
+            connectors.push(comms.front());
+            comms.pop();
+            break;
+    	}
+    }
+    
+
+    array[i] = '\0';
+    for(unsigned k = 0; array[k] != '\0'; k++)
+    {
+        cout << "Pointer " << k << ": "; 
+        cout << array[k];
+        // for(unsigned l = 0; array[k][l] != '\0'; l++)
+        // {
+        //     cout << array[k][l];
+        // }
+        cout << endl;
+    }
+    cout << "Value of i: " << i <<endl;
+    processID = fork(); //fork
+    if(processID < 0) //fork fails
+    {
+    	cout << "Fork Failed" << endl;
+        exit(1);
+    }
+    else if(processID == 0) // child process
+    {
+        cout << "Executing \n";
+        cout << "Child: executing: \n";
+        //cout << comms.front() << endl; // switches off the parent
+        cout << "Work dammit \n";
+        execvp(array[0], array);
+        cout << "Execute failed \n";
+        perror("There was an error with the executable or argument list");
+    }
+    else if (processID > 0)
+    {
+    	if((pid = wait(&status)) < 0)
+    	{
+    	    cout << "Process failed\n";
+    		perror("Process failed");
+    		exit(-1);
+    	}
+    	if (WIFEXITED(status))
+    	{
+    		if(WIFEXITED(status) != 0)
+    		{
+    		    //bool success = false;
+    		}
+    	}
+        
+    	cout << "Parent: finished" << endl;
+    }
+	
 }
 int main (int argc, char **argv)
 {
@@ -131,8 +203,8 @@ int main (int argc, char **argv)
     //put null after every connector
     //tokenize strtok with \0 as a delimiter.
     //vector<string> commands;
-    char* b[66666];
-    char command[66666];
+    char* b[MEMORY];
+    char command[MEMORY];
     cout << "Copying \n";
     for(unsigned i =0; cmd[i] != '\0'; i++)
     {
@@ -146,19 +218,9 @@ int main (int argc, char **argv)
     }
     cout << endl;
     commandsort(command, b);
-    for(unsigned i =0; b[i] != '\0'; i++)
-    {
-        for(unsigned j =0; b[j] != '\0'; j++)
-        {
-            cout << b[i][j];
-        }
-        cout << endl;
-    }
-    
-    cout << "Execvp\n";
-    execvp(b[0], b );
+    executecmd(b);
     //character pointer array
-    //char *b[66666];
+    //char *b[MEMORY];
     //if i find a space ' ' then everything before that space goes into the first pointer
     //of the character array get the address of everything before the space into the chararray
     
