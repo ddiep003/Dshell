@@ -117,32 +117,40 @@ void executecmd(char* array[])
 	    comms.push(array[i]); //pushes commands into queue
 	    i++;
 	}
-	i = 0;
+	
 
 	//char* temp = new char [100];    //mem = 66666
-    while (true)
-    {
-	    //char* temp[100];
-        if(comms.empty())
+	while (true)
+	{
+	    i = 0;
+	    if(comms.empty())
+	    {
+	        break;
+	    }
+	
+        while (true)
         {
-            break;
+    	    //char* temp[100];
+            if(comms.empty())
+            {
+                break;
+            }
+            if ((comms.front() != ";") || (comms.front() != "&&")|| //populate array
+        	    (comms.front() != "||"))
+            {
+                char* temp = new char [100];
+                strcpy(temp, comms.front().c_str());
+                array[i] = temp;
+                comms.pop();
+                i++;
+            }
+            else //comms.front == connector //stop parsing and execvp
+            {
+                connectors.push(comms.front());
+                comms.pop();
+                break;
+        	}
         }
-        if ((comms.front() != ";") || (comms.front() != "&&")|| //populate array
-    	    (comms.front() != "||"))
-        {
-            char* temp = new char [100];
-            strcpy(temp, comms.front().c_str());
-            array[i] = temp;
-            comms.pop();
-            i++;
-        }
-        else //comms.front == connector //stop parsing and execvp
-        {
-            connectors.push(comms.front());
-            comms.pop();
-            break;
-    	}
-    }
     
 
     array[i] = '\0';
@@ -171,6 +179,7 @@ void executecmd(char* array[])
         cout << "Work dammit \n";
         execvp(array[0], array);
         cout << "Execute failed \n";
+        
         perror("There was an error with the executable or argument list");
     }
     else if (processID > 0)
@@ -183,14 +192,16 @@ void executecmd(char* array[])
     	}
     	if (WIFEXITED(status))
     	{
-    		if(WIFEXITED(status) != 0)
+    		if(WIFEXITED(status) != 0)//command sucess
     		{
-    		    //bool success = false;
+
     		}
     	}
         
     	cout << "Parent: finished" << endl;
     }
+    break;
+	}
 	
 }
 int main (int argc, char **argv)
