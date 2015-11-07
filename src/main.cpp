@@ -77,29 +77,30 @@ void executecmd(char* array[])
             {
                 connectors.push(comms.front());
                 comms.pop();
-                cout << "Current connector: " << connectors.front() << endl;
+                //cout << "Current connector: " << connectors.front() << endl;
                 break;
         	}
         	// double connecctors ; ; or ; && or && || should error out
         }
         array[i] = '\0';
-        for(unsigned k = 0; array[k] != '\0'; k++)
-        {
-            cout << "Pointer " << k << ": "; 
-            cout << array[k];
-            cout << endl;
-        }
+        // for(unsigned k = 0; array[k] != '\0'; k++)
+        // {
+        //     cout << "Pointer " << k << ": "; 
+        //     cout << array[k];
+        //     cout << endl;
+        // }
         string ex = "exit";
-        if (!connectors.empty())
+        if ((comms.empty()) && (!connectors.empty()))
         {
-            
+            cout << "command ends on a connector\n";
+            break;
         }
         else if(array[0] == NULL)
         {
-            cout << "Double connecctors \n";
+            cout << "Double connectors \n";
             break;
         }
-        else if (array[0] == ex)
+        if (array[0] == ex)
         {
             cout << "Exiting\n";
             exit(0);
@@ -112,11 +113,11 @@ void executecmd(char* array[])
         }
         else if(processID == 0) // child process
         {
-            cout << "Executing \n";
-            cout << "Child: executing: \n";
-            cout << "Work dammit \n";
+            //cout << "Executing \n";
+            //cout << "Child: executing: \n";
+            //cout << "Work dammit \n";
             status = execvp(array[0], array);
-            cout << "Execute failed \n";
+            //cout << "Execute failed \n";
             execSuccess = false;
             perror("There was an error with the executable or argument list");
         }
@@ -130,7 +131,7 @@ void executecmd(char* array[])
         	}
         	if (execSuccess == true)
         	{
-        	    cout << "Command worked\n";
+        	    //cout << "Command worked\n";
         	    if (connectors.empty())
         	    {
         	        break;
@@ -154,7 +155,7 @@ void executecmd(char* array[])
         	    {
         	        if (comms.empty())
         	        {
-        	            cout << "No more commands\n";
+        	            cout << "Invalid, ended with a connector\n";
         	            connectors.pop();
         	            break;
         	        }
@@ -170,11 +171,13 @@ void executecmd(char* array[])
         	    }
         	    if (connectors.front() == "&&")
         	    {
-        	        runnext = false;
+        	        
         	        if (comms.empty())
         	        {
         	            break;
         	        }
+        	        runnext = false;
+        	        connectors.pop();
         	    }
         	    else if (connectors.front() == ";")
         	    {
@@ -188,37 +191,59 @@ void executecmd(char* array[])
         	    }
         	    
         	}
-        	cout << "Parent: finished\n" << endl;
+        	//cout << "Parent: finished\n" << endl;
         }
 	}
 	
 }
 int main (int argc, char **argv)
 {
-    string cmd;
-    cout << "$ ";
-    getline(cin, cmd);
-    parsing(cmd);
-    
-    //put null after every connector
-    //tokenize strtok with \0 as a delimiter.
-    //vector<string> commands;
-    char* b[MEMORY];
-    char command[MEMORY];
-    cout << "Copying \n";
-    for(unsigned i =0; cmd[i] != '\0'; i++)
+    //size_t len = 300;
+    string user;
+    char* host = (char*)malloc(300);
+    if (getlogin() != NULL) 
     {
-        command[i] = cmd[i];
+        user = getlogin();
     }
-    command[cmd.length()] = '\0';
-    
-    for (unsigned i = 0; command[i] != '\0'; i++)
+    else 
     {
-        cout << command[i];
+        perror("Error with getting user");
     }
-    cout << endl;
-    commandsort(command, b);
-    executecmd(b);
+    if (gethostname(host, 300) == -1) 
+    {
+        perror("Error with getting host name");
+    }
+    cout << host << endl;
+    while (true)
+    {
+        string cmd;
+        cout << user << "@" << host <<"$ ";
+        getline(cin, cmd);
+        parsing(cmd);
+        
+        //put null after every connector
+        //tokenize strtok with \0 as a delimiter.
+        //vector<string> commands;
+        char* b[MEMORY];
+        char command[MEMORY];
+        //cout << "Copying \n";
+        for(unsigned i =0; cmd[i] != '\0'; i++)
+        {
+            command[i] = cmd[i];
+        }
+        command[cmd.length()] = '\0';
+        
+        for (unsigned i = 0; command[i] != '\0'; i++)
+        {
+            cout << command[i];
+        }
+        cout << endl;
+        commandsort(command, b);
+        executecmd(b);
+        cout << "Executing done\n";
+    }
+    free (host);
+    return 0;
     //character pointer array
     //char *b[MEMORY];
     //if i find a space ' ' then everything before that space goes into the first pointer

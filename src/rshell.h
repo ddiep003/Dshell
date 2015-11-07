@@ -53,8 +53,8 @@ void parsing(string& cmd)
         }
         //display(parsed);
     }
-    cout << "Original: " << cmd << endl;
-    cout << "parsed commands: " << parsed <<endl;
+    //cout << "Or iginal: " << cmd << endl;
+    //cout << "parsed commands: " << parsed <<endl;
     //display(parsed);
     cmd = parsed;
     free(parsed);
