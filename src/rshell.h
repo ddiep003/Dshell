@@ -4,28 +4,24 @@
 
 #define MEMORY 66666
 using namespace std;
-void parsing(string& cmd)
+void parsing(string& cmd) //separates the connectors from the rest of the commands
 {
     char* parsed = (char*) malloc (MEMORY);
     for (int i = 0, j = 0; cmd[i] != '\0'; ++i, ++j)
     {
         if(cmd[i] == '#')
         {
-            //cout << "made it#" << endl;
             cmd[i] = '\0';
             parsed[j] = '\0';
         }
         else if (cmd[i] == ';')
         {
-            //cout << "made it;" << endl;
             parsed[j] = ' ';
             parsed[++j] = ';';
             parsed[++j] = ' ';
-            //display(parsed);
         }
         else if (cmd[i] == '|' && cmd[i + 1] == '|')
         {
-            //cout << "made it||" << endl;
             parsed[j] = ' ';
             parsed[++j] = '|';
             parsed[++j] = '|';
@@ -34,7 +30,6 @@ void parsing(string& cmd)
         }
         else if (cmd[i] == '&' && cmd[i + 1] == '&')//&& connector
         {
-            //cout << "made it&&" << endl;
             parsed[j] = ' ';
             parsed[++j] = '&';
             parsed[++j] = '&';
@@ -43,28 +38,18 @@ void parsing(string& cmd)
         }
         else
         {
-            //cout <<"This is parsed at " << parsed[j] << endl;
             parsed[j] = cmd[i];
         }
         if (cmd[i + 1] == '\0')
         {
             parsed[j + 1] = '\0';
-            //cout << "Index of j: " << j << end
         }
-        //display(parsed);
     }
-    //cout << "Or iginal: " << cmd << endl;
-    //cout << "parsed commands: " << parsed <<endl;
-    //display(parsed);
     cmd = parsed;
-    free(parsed);
-    //cout << "new cmd: " << cmd << endl;
-    //const char *c = cmd.c_str();
-    //strcpy(, parsed);
-    //free(parsed)
+    free(parsed); //free memory
 }
 
-void commandsort(char* cmd, char* b[] )
+void commandsort(char* cmd, char* b[]) //sets char array to the command line
 {
     int i = 0;
     char* token = strtok(cmd, " ");

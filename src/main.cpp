@@ -18,13 +18,13 @@
 void executecmd(char* array[])
 {
     pid_t processID, pid; //processID = commands
-	int status;
+	int status; //returns status of process
 	
-    int i = 0;
+    int i = 0; //increment index
     int numconnect = 0; //counts connectors in command line.
     bool runnext = true; //checks if its ok to run the next command
-    queue<string> connectors;
-    queue<string> comms;
+    queue<string> connectors; //stores the connectors
+    queue<string> comms; //stores the commands
     
 	while(array[i] != '\0')
 	{
@@ -45,9 +45,9 @@ void executecmd(char* array[])
     	    array[j] = '\0'; //refreshes the array
     	    j++;
 	    }
-	    bool execSuccess = true;
+	    bool execSuccess = true; //checks if command runs correctly
 	    i = 0;
-	    if(comms.empty())
+	    if(comms.empty()) //comms should always have commands if not then it breaks out of the loop
 	    {
 	        break;
 	    }
@@ -60,11 +60,11 @@ void executecmd(char* array[])
             if ((comms.front() != ";") && (comms.front() != "&&") && //populate array
         	    (comms.front() != "||"))
             {
-                if (runnext == false)
+                if (runnext == false) //ignores the next command because of connectors conditionals
                 {
                     comms.pop();
                 }
-                else
+                else //points char array to a command
                 {
                     char* temp = new char [100];
                     strcpy(temp, comms.front().c_str());
@@ -75,32 +75,32 @@ void executecmd(char* array[])
             }
             else //comms.front == connector //stop parsing and execvp
             {
-                connectors.push(comms.front());
-                comms.pop();
+                connectors.push(comms.front()); //store connector
+                comms.pop(); //remove connector from queue
                 //cout << "Current connector: " << connectors.front() << endl;
-                break;
+                break; //exit loop: the char array has the full command loaded
         	}
         	// double connecctors ; ; or ; && or && || should error out
         }
-        array[i] = '\0';
+        array[i] = '\0'; //null terminate
         // for(unsigned k = 0; array[k] != '\0'; k++)
         // {
         //     cout << "Pointer " << k << ": "; 
         //     cout << array[k];
         //     cout << endl;
         // }
-        string ex = "exit";
-        if ((comms.empty()) && (!connectors.empty()))
+        string ex = "exit"; //checks for exit
+        if ((comms.empty()) && (!connectors.empty())) 
         {
             cout << "command ends on a connector\n";
             break;
         }
-        else if(array[0] == NULL)
+        else if(array[0] == NULL) //if there are two connectors in a row then a[0] is most likely null
         {
             cout << "Double connectors \n";
             break;
         }
-        if (array[0] == ex)
+        if (array[0] == ex) // checks if user enters exit command
         {
             cout << "Exiting\n";
             exit(0);
@@ -113,23 +113,18 @@ void executecmd(char* array[])
         }
         else if(processID == 0) // child process
         {
-            //cout << "Executing \n";
-            //cout << "Child: executing: \n";
-            //cout << "Work dammit \n";
             status = execvp(array[0], array);
-            //cout << "Execute failed \n";
             execSuccess = false;
             perror("There was an error with the executable or argument list");
         }
         if (processID > 0)
         {
-        	if((pid = wait(&status)) < 0)
+        	if((pid = wait(&status)) < 0) //checks for failure
         	{
-        	    cout << "Process failed\n";
         		perror("Process failed");
         		exit(-1);
         	}
-        	if (execSuccess == true)
+        	if (execSuccess == true) //execvp succeeded
         	{
         	    //cout << "Command worked\n";
         	    if (connectors.empty())
@@ -194,13 +189,12 @@ void executecmd(char* array[])
         	//cout << "Parent: finished\n" << endl;
         }
 	}
-	
 }
 int main (int argc, char **argv)
 {
     //size_t len = 300;
-    string user;
-    char* host = (char*)malloc(300);
+    string user; //user name
+    char* host = (char*)malloc(300); //host name
     if (getlogin() != NULL) 
     {
         user = getlogin();
@@ -213,19 +207,15 @@ int main (int argc, char **argv)
     {
         perror("Error with getting host name");
     }
-    cout << host << endl;
+    //cout << host << endl;
     while (true)
     {
         string cmd;
         cout << user << "@" << host <<"$ ";
         getline(cin, cmd);
         parsing(cmd);
-        
-        //put null after every connector
-        //tokenize strtok with \0 as a delimiter.
-        //vector<string> commands;
-        char* b[MEMORY];
-        char command[MEMORY];
+        char* b[MEMORY]; //character array that stores commands
+        char command[MEMORY]; //char array that holds the converted command
         //cout << "Copying \n";
         for(unsigned i =0; cmd[i] != '\0'; i++)
         {
@@ -233,7 +223,7 @@ int main (int argc, char **argv)
         }
         command[cmd.length()] = '\0';
         
-        for (unsigned i = 0; command[i] != '\0'; i++)
+        for (unsigned i = 0; command[i] != '\0'; i++) //outputs user input 
         {
             cout << command[i];
         }
@@ -244,17 +234,4 @@ int main (int argc, char **argv)
     }
     free (host);
     return 0;
-    //character pointer array
-    //char *b[MEMORY];
-    //if i find a space ' ' then everything before that space goes into the first pointer
-    //of the character array get the address of everything before the space into the chararray
-    
-    
 }
-// if it fails then child returns -1 //
-//perror outputs failure when fork fails
-//waitpid(current_pid, &status, 0)
-
-
-//strtok(string, " ");
-//while (string != NULL)
