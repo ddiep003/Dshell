@@ -11,161 +11,227 @@
 //system libraries end
 #include <csignal>
 #include <queue>
+#include "rshell.h"
 
-using namespace std;
-void display(string x)
-{
-    for (int i = 0; x[i] != '\0'; ++i)
-    {
-        cout << x[i];
-    }
-    cout << endl;
-}
-void parsing(string& cmd)
-{
-    char* parsed = (char*) malloc (50000);
-    for (int i = 0, j = 0; cmd[i] != '\0'; ++i, ++j)
-    {
-        if(cmd[i] == '#')
-        {
-            //cout << "made it#" << endl;
-            cmd[i] = '\0';
-            parsed[j] = '\0';
-        }
-        else if (cmd[i] == ';')
-        {
-            //cout << "made it;" << endl;
-            parsed[j] = ' ';
-            parsed[++j] = ';';
-            parsed[++j] = ' ';
-            //display(parsed);
-        }
-        else if (cmd[i] == '|' && cmd[i + 1] == '|')
-        {
-            //cout << "made it||" << endl;
-            parsed[j] = ' ';
-            parsed[++j] = '|';
-            parsed[++j] = '|';
-            parsed[++j] = ' ';
-            ++i;
-        }
-        else if (cmd[i] == '&' && cmd[i + 1] == '&')//&& connector
-        {
-            //cout << "made it&&" << endl;
-            parsed[j] = ' ';
-            parsed[++j] = '&';
-            parsed[++j] = '&';
-            parsed[++j] = ' ';
-            ++i;
-        }
-        else
-        {
-            //cout <<"This is parsed at " << parsed[j] << endl;
-            parsed[j] = cmd[i];
-        }
-        if (cmd[i + 1] == '\0')
-        {
-            parsed[j + 1] = '\0';
-            //cout << "Index of j: " << j << end
-        }
-        //display(parsed);
-    }
-    cout << "Original: " << cmd << endl;
-    cout << "parsed commands: " << parsed <<endl;
-    //display(parsed);
-    cmd = parsed;
-    //cout << "new cmd: " << cmd << endl;
-    //const char *c = cmd.c_str();
-    //strcpy(, parsed);
-    //free(parsed)
-}
 
-void myFork()
+//when i hit a connector in char array set it to null and keep track of array
+void executecmd(char* array[])
 {
-	pid_t pid = fork();
-	if(pid < 0)
+    pid_t processID, pid; //processID = commands
+	int status; //returns status of process
+	
+    int i = 0; //increment index
+    int numconnect = 0; //counts connectors in command line.
+    bool runnext = true; //checks if its ok to run the next command
+    queue<string> connectors; //stores the connectors
+    queue<string> comms; //stores the commands
+    
+	while(array[i] != '\0')
 	{
-		cout << "Fork Failed" << endl;
-		exit(1);
+	    comms.push(array[i]); //pushes commands into queue
+	    if ((comms.front() == ";") || (comms.front() == "&&") ||
+	       (comms.front() == "||"))
+	       {
+	           numconnect = numconnect + 1;
+	       }
+	    array[i] = '\0'; //refreshes the array
+	    i++;
 	}
-	else if (pid == 0)
+	while (true)
 	{
-		cout << "Child: I'm the child: " << pid << endl;
-	}
-	else if (pid > 0)
-	{
-		cout << "Parent: I'm the parent: " << pid << endl;
-	}
-}
-void nullconnectors(string& cm)
-{
-    for(unsigned i = 0; i < cm.size(); ++i)
-    {
-        if (cm[i] == ';')
+	    int j = 0;
+	    while(array[j] != '\0')
+	    {
+    	    array[j] = '\0'; //refreshes the array
+    	    j++;
+	    }
+	    bool execSuccess = true; //checks if command runs correctly
+	    i = 0;
+	    if(comms.empty()) //comms should always have commands if not then it breaks out of the loop
+	    {
+	        break;
+	    }
+        while (true)
         {
-            if(cm[i + 1] != '\0')
+            if(comms.empty())
             {
-                cm[i + 1] = '\0';
+                break;
             }
-        }
-        if((cm[i] == '&') && (cm[i + 1] == '&'))
-        {
-            if(cm[i + 2] != '\0')
+            if ((comms.front() != ";") && (comms.front() != "&&") && //populate array
+        	    (comms.front() != "||"))
             {
-                cm[i + 2] = '\0';
-                //cout << cm[i] << cm[i+1];
+                if (runnext == false) //ignores the next command because of connectors conditionals
+                {
+                    comms.pop();
+                }
+                else //points char array to a command
+                {
+                    char* temp = new char [100];
+                    strcpy(temp, comms.front().c_str());
+                    array[i] = temp;
+                    comms.pop();
+                    i++;
+                }
             }
+            else //comms.front == connector //stop parsing and execvp
+            {
+                connectors.push(comms.front()); //store connector
+                comms.pop(); //remove connector from queue
+                //cout << "Current connector: " << connectors.front() << endl;
+                break; //exit loop: the char array has the full command loaded
+        	}
+        	// double connecctors ; ; or ; && or && || should error out
         }
-        
-    } 
-}
-void commandsort(char* cmd, char* b[] )
-{
-    for(unsigned i = 0; cmd[i] != '\0'; i++ )
-    {
-        if(cmd[i] == ' ')
+        array[i] = '\0'; //null terminate
+        // for(unsigned k = 0; array[k] != '\0'; k++)
+        // {
+        //     cout << "Pointer " << k << ": "; 
+        //     cout << array[k];
+        //     cout << endl;
+        // }
+        string ex = "exit"; //checks for exit
+        if ((comms.empty()) && (!connectors.empty())) 
         {
-            b[0] = cmd;
-            cmd[i] = '\0';
-            
+            cout << "command ends on a connector\n";
+            break;
         }
-        
-    }
+        else if(array[0] == NULL) //if there are two connectors in a row then a[0] is most likely null
+        {
+            cout << "Double connectors \n";
+            break;
+        }
+        if (array[0] == ex) // checks if user enters exit command
+        {
+            cout << "Exiting\n";
+            exit(0);
+        }
+        processID = fork(); //fork
+        if(processID < 0) //fork fails
+        {
+        	cout << "Fork Failed" << endl;
+            exit(1);
+        }
+        else if(processID == 0) // child process
+        {
+            status = execvp(array[0], array);
+            execSuccess = false;
+            perror("There was an error with the executable or argument list");
+        }
+        if (processID > 0)
+        {
+        	if((pid = wait(&status)) < 0) //checks for failure
+        	{
+        		perror("Process failed");
+        		exit(-1);
+        	}
+        	if (execSuccess == true) //execvp succeeded
+        	{
+        	    //cout << "Command worked\n";
+        	    if (connectors.empty())
+        	    {
+        	        break;
+        	    }
+        	    if (connectors.front() == "&&")
+        	    {
+        	        if (comms.empty())
+        	        {
+        	            cout << "Invalid, ended with a connector\n";
+        	            exit(-1);
+        	        }
+        	        connectors.pop();
+        	        runnext = true;
+        	    }
+        	    else if (connectors.front() == ";")
+        	    {
+        	        connectors.pop();
+        	        runnext = true;
+        	    }
+        	    else if (connectors.front() == "||")
+        	    {
+        	        if (comms.empty())
+        	        {
+        	            cout << "Invalid, ended with a connector\n";
+        	            connectors.pop();
+        	            break;
+        	        }
+        	        connectors.pop();
+        	        runnext = false;
+        	   }
+        	}
+        	else if (execSuccess == false)
+        	{
+        	    if(connectors.empty())
+        	    {
+        	        break;
+        	    }
+        	    if (connectors.front() == "&&")
+        	    {
+        	        
+        	        if (comms.empty())
+        	        {
+        	            break;
+        	        }
+        	        runnext = false;
+        	        connectors.pop();
+        	    }
+        	    else if (connectors.front() == ";")
+        	    {
+        	        connectors.pop();
+        	        runnext = true;
+        	    }
+        	    else if (connectors.front() == "||")
+        	    {
+        	        connectors.pop();
+        	        runnext = true;
+        	    }
+        	    
+        	}
+        	//cout << "Parent: finished\n" << endl;
+        }
+	}
 }
 int main (int argc, char **argv)
 {
-    string cmd;
-    //while (cmd != "exit")
-    //{
-        cout << "$ ";
-        
-        getline(cin, cmd);
-        //cout << cmd << endl;
-    //}
-
-    parsing(cmd);
-    //put null after every connector
-    //tokenize strtok with \0 as a delimiter.
-    //vector<string> commands;
-    
-    cout <<"Before nullconnectors: " << cmd << endl;
-    //nullconnectors(cmd);
-    //cout << *argv <<endl;
-    cout <<"After nullconnectors: " <<  cmd << endl;
-    char command[66666];
-    unsigned i = 0;
-    for(i = 0; i < cmd.size(); i++)
+    //size_t len = 300;
+    string user; //user name
+    char* host = (char*)malloc(300); //host name
+    if (getlogin() != NULL) 
     {
-        command[i] = cmd[i];
+        user = getlogin();
     }
-    command[i + 1] = '\0';
-    char* b[66666];
-    b[0] = command;
-    execvp(b[0], b );
-    //character pointer array
-    //char *b[66666];
-    //if i find a space ' ' then everything before that space goes into the first pointer
-    //of the character array get the address of everything before the space into the chararray
-    
-    
+    else 
+    {
+        perror("Error with getting user");
+    }
+    if (gethostname(host, 300) == -1) 
+    {
+        perror("Error with getting host name");
+    }
+    //cout << host << endl;
+    while (true)
+    {
+        string cmd;
+        cout << user << "@" << host <<"$ ";
+        getline(cin, cmd);
+        parsing(cmd);
+        char* b[MEMORY]; //character array that stores commands
+        char command[MEMORY]; //char array that holds the converted command
+        //cout << "Copying \n";
+        for(unsigned i =0; cmd[i] != '\0'; i++)
+        {
+            command[i] = cmd[i];
+        }
+        command[cmd.length()] = '\0';
+        
+        for (unsigned i = 0; command[i] != '\0'; i++) //outputs user input 
+        {
+            cout << command[i];
+        }
+        cout << endl;
+        commandsort(command, b);
+        executecmd(b);
+        cout << "Executing done\n";
+    }
+    free (host);
+    return 0;
 }
