@@ -49,18 +49,6 @@ void parsing(string& cmd) //separates the connectors from the rest of the comman
             parsed[++j] = ']';
             parsed[++j] = ' ';
         }
-        else if (cmd[i] == '(')
-        {
-            parsed[j] = ' ';
-            parsed[++j] = '(';
-            parsed[++j] = ' ';
-        }
-        else if (cmd[i] == ')')
-        {
-            parsed[j] = ' ';
-            parsed[++j] = ')';
-            parsed[++j] = ' ';
-        }
         else
         {
             parsed[j] = cmd[i];
@@ -102,7 +90,6 @@ void executecmd(char* array[], queue<string> &connectors)
 	int status; //returns status of process
 	string test = "test";
     string bracket = "[";
-    queue<string> precedence;
     int i = 0; //increment index
     bool runnext = true; //checks if its ok to run the next command
     //queue<string> connectors; //stores the connectors
@@ -137,16 +124,7 @@ void executecmd(char* array[], queue<string> &connectors)
             if ((comms.front() != ";") && (comms.front() != "&&") && //populate array
         	    (comms.front() != "||"))
             {
-
                 if (runnext == false) //ignores the next command because of connectors conditionals
-                {
-                    comms.pop();
-                }
-                else if (comms.front() == "(")
-                {
-                    comms.pop();
-                }
-                else if (comms.front() == ")")
                 {
                     comms.pop();
                 }
@@ -158,7 +136,6 @@ void executecmd(char* array[], queue<string> &connectors)
                     comms.pop();
                     i++;
                 }
-                
             }
             else //comms.front == connector //stop parsing and execvp
             {
