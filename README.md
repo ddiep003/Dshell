@@ -1,8 +1,8 @@
-# Linux Shell for CS100
+# Linux Shell Reproduction
 # By Danny Diep
 ## Shell Functions
 
-rshell is a c++ shell that emulates unix and bash. For now, there is only basic shell functions. This includes:
+Dshell is a c++ shell that emulates unix and bash. For now, there is only basic shell functions. This includes:
 
 * A command prompt
 * Command recognition
@@ -24,7 +24,7 @@ You can also add optional parameters, such as the -a, -l, or -R flags.
 
 
 ##How to use
-You can compile rshell and ls with:
+You can compile Dshell and ls with:
 
 ``make``
 
@@ -47,7 +47,7 @@ Future bugs will be documented here.
 * In rshell,   the program includes some but not all idiot checks.
 
 ##Limitations
-Limitations of rshell.
+Limitations of Dshell.
 
 * Any command over 66,666 characters will overflow the command buffer.
 
